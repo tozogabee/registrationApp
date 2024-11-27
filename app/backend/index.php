@@ -8,16 +8,6 @@ include_once 'util/LogManager.php';
 
 
 $logManager = LogManager::getInstance();
-/*
-// Ensure $mysqli is initialized before calling recreate_users_file
-if (isset($mysqli)) {
-    $dbManager = DbManager::getInstance();
-    $dbManager->recreateUsersFile();
-    $logManager->logMessage('INFO','Data connection successfull! and created users.txt');
-} else {
-    $logManager->logMessage('ERROR','Database connection error. Please check db.php.');
-    die('Database connection error. Please check db.php.');
-}*/
 
 try {
     $dbManager = DbManager::getInstance();

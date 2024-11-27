@@ -137,36 +137,31 @@ class DbManager {
         return null;
     }
     
-    
-
-    // Private method to recreate the users.txt file
-   /*public function recreateUsersFile() {
-        $filePath = './backend/databasefile/users.txt';
-        $userDbFileDir = dirname($filePath);
-        if (!is_dir($userDbFileDir)) {
-            mkdir($userDbFileDir, 0777, true); // Create directory with permissions
-        }
-        if (!file_exists($filePath)) {
-            file_put_contents($filePath, ""); // Create an empty log file
-        } 
-
-        $file = fopen($filePath, "w");
-
-        $result = $this->mysqli->query("SELECT id, email, nickname, birth_date, password_hash FROM users");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $line = "{$row['id']},{$row['email']},{$row['nickname']},{$row['birth_date']},{$row['password_hash']}\n";
-                fwrite($file, $line);
-            }
-        } else {
-            $this->logManager->logMessage('ERROR', "Error fetching users: : {$this->mysqli->error}");
-        }
-        fclose($file);
-    }*/
     public function recreateUsersFile() {
         $filePath = './backend/databasefile/users.txt';
-        $file = fopen($filePath, "w"); // Open the file in write mode
     
+        $directoryPath = dirname($filePath); // Extract the directory path
+
+        // Check if the directory exists, and create it if it doesn't
+        if (!is_dir($directoryPath)) {
+            if (!mkdir($directoryPath, 0777, true)) {
+                $this->logManager->logMessage('ERROR', "Failed to create directory: $directoryPath");
+                return;
+            }
+            $this->logManager->logMessage('INFO', "Directory created: $directoryPath");
+        }
+
+        // Check if the file exists, and create it if it doesn't
+        if (!file_exists($filePath)) {
+            if (!touch($filePath)) {
+                $this->logManager->logMessage('ERROR', "Failed to create file: $filePath");
+                return;
+            }
+            $this->logManager->logMessage('INFO', "File created: $filePath");
+        }
+
+        $file = fopen($filePath, "w"); // Open the file in write mode
+
         // Fetch all users from the database
         $result = $this->mysqli->query("SELECT id, email, nickname, birth_date, password_hash FROM users");
     
@@ -181,69 +176,6 @@ class DbManager {
     
         fclose($file); // Close the file
         $this->logManager->logMessage('INFO', "Users file synchronized with database.");
-    }
-    
-
-    public function loginUser_old($email) {
-        $this->mysqli->begin_transaction();
-        $exist_user = $this->fetchUserByEmail($email);
-
-        $this->logManager->logMessage('INFO', "Attempting to log in user with email $email.");
-    
-        if (!$exist_user) {
-            $this->logManager->logMessage('ERROR', "User with email $email does not exist.");
-            $this->mysqli->rollback();
-            return [
-                'success' => false,
-                'message' => 'User does not exist'
-            ];
-        }
-    
-        $stmt = $this->mysqli->prepare(
-            "INSERT INTO logins (user_id, is_logged) VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE is_logged = VALUES(is_logged), logged_in_at = CURRENT_TIMESTAMP"
-        );
-    
-        if (!$stmt) {
-            $this->logManager->logMessage('ERROR', "Statement preparation failed: " . $this->mysqli->error);
-            $this->mysqli->rollback();
-            return [
-                'success' => false,
-                'message' => 'Database error: ' . $this->mysqli->error
-            ];
-        }
-    
-        $user_id = $exist_user->id;
-        // Check if the user is already logged in
-        if ($this->isUserLoggedIn($user_id)) {
-            $this->logManager->logMessage('ERROR', "User with ID $user_id is already logged in.");
-            $this->mysqli->rollback();
-            return [
-                'success' => false,
-                'message' => 'User is already logged in'
-            ];
-        }
-        $is_logged = 1; // Use integer (1 for true)
-        $stmt->bind_param("ii", $user_id, $is_logged);
-    
-        if ($stmt->execute()) {
-            $this->mysqli->commit();
-            $this->logManager->logMessage('INFO', "User with ID $user_id logged in successfully.");
-            return new UserDto(
-                $user_id,
-                $exist_user->email,
-                $exist_user->nickname,
-                $exist_user->birthDate,
-                $exist_user->passwordHash
-            );
-        } else {
-            $this->logManager->logMessage('ERROR', "Failed to log in user with ID $user_id: " . $stmt->error);
-            $this->mysqli->rollback();
-            return [
-                'success' => false,
-                'message' => 'Failed to log in user: ' . $stmt->error
-            ];
-        }
     }
 
     public function loginUser($email) {

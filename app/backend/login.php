@@ -35,7 +35,6 @@ $password = trim($data['password']);
 try {
     // Fetch user details by email
     $user_data = $dbManager->fetchUserByEmail($email);
-    //$logManager->logMessage('INFO',"The user data : {$user_data->toArray()}");
     // If user is not found
     if (!$user_data) {
         $response = ['success' => false, 'message' => 'User not found.'];
