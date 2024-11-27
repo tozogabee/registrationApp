@@ -1,0 +1,19 @@
+# Ignore logs
+*.log
+
+# Ignore system files
+.DS_Store
+
+# Ignore user data file
+users.txt
+
+# Ignore IDE settings
+.vscode/
+.idea/
+
+# Ignore node_modules (if applicable)
+node_modules/
+
+# Ignore environment files
+.env
+

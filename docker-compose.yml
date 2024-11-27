@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    container_name: registration_system-app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: registration_system
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: TheStrongPassword20241126!
+
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: TheStrongPassword20241126!
+      MYSQL_DATABASE: registration_system
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: TheStrongPassword20241126!
+
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mySql.conf:/etc/mysql/conf.d/mySql.conf
+
+
+volumes:
+  db_data:
+
