@@ -1,5 +1,4 @@
 <?php
-//ob_start(); // Start output buffering
 include_once 'util/DbManager.php';
 include_once 'util/LogManager.php';
 
@@ -74,5 +73,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $logManager->logMessage('ERROR','Invalid request method. Use POST.');
 
 }
-//ob_end_flush(); // Flush the output buffer
 ?>

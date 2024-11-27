@@ -24,7 +24,7 @@ try {
     $mysqli = $dbManager->getMysqli();
 
     if ($mysqli) {
-        $dbManager->recreateUsersFile();
+        //$dbManager->recreateUsersFile();
         $logManager->logMessage('INFO', 'Data connection successful! Users file created.');
     } else {
         $logManager->logMessage('ERROR', 'Database connection is null.');

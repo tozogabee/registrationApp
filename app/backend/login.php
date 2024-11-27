@@ -1,60 +1,88 @@
 <?php
+// Include necessary files
 include_once 'util/DbManager.php';
 include_once 'util/LogManager.php';
 
+// Set the response content type to JSON
 header('Content-Type: application/json');
+
+// Get single instances of the required managers
 $dbManager = DbManager::getInstance();
 $logManager = LogManager::getInstance();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
+// Allow only POST requests
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $response = ['success' => false, 'message' => 'Invalid request method.'];
+    $logManager->logMessage('ERROR', $response['message']);
+    echo json_encode($response);
+    exit;
+}
 
-    if (!isset($data['email'], $data['password'])) {
-        echo json_encode(['success' => false, 'message' => 'Invalid request data.']);
-        $logManager->logMessage('ERROR', 'Invalid request data.');
+// Decode JSON input from the request
+$data = json_decode(file_get_contents('php://input'), true);
+
+// Validate input data
+if (empty($data['email']) || empty($data['password'])) {
+    $response = ['success' => false, 'message' => 'Email and password are required.'];
+    $logManager->logMessage('ERROR', $response['message'] . ' Input: ' . json_encode($data));
+    echo json_encode($response);
+    exit;
+}
+
+$email = trim($data['email']);
+$password = trim($data['password']);
+
+try {
+    // Fetch user details by email
+    $user_data = $dbManager->fetchUserByEmail($email);
+    //$logManager->logMessage('INFO',"The user data : {$user_data->toArray()}");
+    // If user is not found
+    if (!$user_data) {
+        $response = ['success' => false, 'message' => 'User not found.'];
+        $logManager->logMessage('ERROR', $response['message'] . " Email: $email");
+        echo json_encode($response);
         exit;
     }
 
-    $email = trim($data['email']);
-    $password = trim($data['password']);
-
-    try {
-        $user_data = $dbManager->fetchUserByEmail($email);
-
-        if ($user_data) {
-            if (password_verify($password, $user_data->passwordHash)) {
-                $logManager->logMessage('INFO', "{$user_data->nickname} attempting to log in.");
-                $loggedUser = $dbManager->loginUser($email);
-
-                if ($loggedUser instanceof UserDto) {
-                    echo json_encode([
-                        'success' => true,
-                        'id' => $loggedUser->id,
-                        'email' => $loggedUser->email,
-                        'nickname' => $loggedUser->nickname,
-                        'birth_date' => $loggedUser->birthDate
-                    ]);
-                    $logManager->logMessage('INFO', "{$loggedUser->nickname} logged in successfully.");
-                } else {
-                    // Handle unexpected return value
-                    echo json_encode(['success' => false, 'message' => 'Login process failed unexpectedly.']);
-                    $logManager->logMessage('ERROR', 'Unexpected return value from loginUser.');
-                }
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Incorrect password.']);
-                $logManager->logMessage('ERROR', 'Incorrect password for ' . $email);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'User not found.']);
-            $logManager->logMessage('ERROR', "User with email $email not found.");
-        }
-    } catch (Exception $e) {
-        // Log and handle any unexpected exceptions
-        $logManager->logMessage('ERROR', 'Unhandled exception: ' . $e->getMessage());
-        echo json_encode(['success' => false, 'message' => 'An unexpected error occurred.']);
+    // Verify the provided password against the stored hash
+    if (!password_verify($password, $user_data->passwordHash)) {
+        $response = ['success' => false, 'message' => 'Incorrect password.'];
+        $logManager->logMessage('ERROR', $response['message'] . " Email: $email");
+        echo json_encode($response);
+        exit;
     }
-} else {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
-    $logManager->logMessage('ERROR', 'Invalid request method.');
+
+    $logManager->logMessage('INFO', "{$user_data->nickname} attempting to log in.");
+
+    // Attempt to log the user in
+    $loggedUser = $dbManager->loginUser($email);
+
+    if (is_array($loggedUser) && !$loggedUser['success']) {
+        // Handle login error (e.g., user already logged in)
+        $logManager->logMessage('ERROR', "Login failed: " . json_encode($loggedUser));
+        echo json_encode($loggedUser);
+        exit;
+    } elseif ($loggedUser instanceof UserDto) {
+        // Successful login
+        $response = [
+            'success' => true,
+            'id' => $loggedUser->id,
+            'email' => $loggedUser->email,
+            'nickname' => $loggedUser->nickname,
+            'birth_date' => $loggedUser->birthDate
+        ];
+        $logManager->logMessage('INFO', "{$loggedUser->nickname} logged in successfully.");
+        echo json_encode($response);
+    } else {
+        // Handle unexpected return type
+        $response = ['success' => false, 'message' => 'Unexpected error during login.'];
+        $logManager->logMessage('ERROR', $response['message'] . ' Value: ' . json_encode($loggedUser));
+        echo json_encode($response);
+    }
+} catch (Exception $e) {
+    // Catch unexpected exceptions
+    $response = ['success' => false, 'message' => 'An unexpected error occurred.'];
+    $logManager->logMessage('ERROR', $response['message'] . ' Exception: ' . $e->getMessage());
+    echo json_encode($response);
 }
 ?>
