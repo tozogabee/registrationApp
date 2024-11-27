@@ -1,5 +1,6 @@
 <?php
-include_once 'functions.php';
+include_once 'util/DbManager.php';
+include_once 'util/LogManager.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
