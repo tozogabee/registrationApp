@@ -6,6 +6,12 @@ session_start();
 $dbManager = DbManager::getInstance();
 $logManager = LogManager::getInstance();
 
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'User not logged in.']);
+    http_response_code(401); // Unauthorized
+    exit;
+}
 // Allow only POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $response = ['success' => false, 'message' => 'Invalid request method.'];

@@ -1,8 +1,8 @@
 <?php
+session_start();
 // Include necessary files
 include_once 'util/DbManager.php';
 include_once 'util/LogManager.php';
-session_start();
 
 
 // Set the response content type to JSON
@@ -57,12 +57,18 @@ try {
 
     // Attempt to log the user in
     $loggedUser = $dbManager->loginUser($email);
+    //$logManager->logMessage('INFO', "{$loggedUser} is investigating to logged or not.");
 
     if (is_array($loggedUser) && !$loggedUser['success']) {
-        // Handle login error (e.g., user already logged in)
-        $logManager->logMessage('ERROR', "Login failed: " . json_encode($loggedUser));
+
         echo json_encode($loggedUser);
-        exit;
+        if (isset($loggedUser['userDto']) && $loggedUser['userDto'] instanceof UserDto) {
+            // Set session variables
+            $_SESSION['user_id'] = $loggedUser['userDto']->id;
+            $_SESSION['email'] = $loggedUser['userDto']->email;
+            $_SESSION['nickname'] = $loggedUser['userDto']->nickname;
+
+        }
     } elseif ($loggedUser instanceof UserDto) {
         // Successful login
         $response = [
@@ -74,6 +80,7 @@ try {
         ];
         $_SESSION['email'] = $loggedUser->email;
         $_SESSION['user_id'] = $loggedUser->id; 
+        $_SESSION['nickname'] = $loggedUser->nickname;
         $logManager->logMessage('INFO', "{$loggedUser->nickname} logged in successfully.");
         echo json_encode($response);
     } else {

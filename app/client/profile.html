@@ -8,16 +8,18 @@
 </head>
 <body>
     <h1>Update Profile</h1>
-    <form id="profileForm" action="../backend/profile.php">
+    <form id="profileForm" method="POST" action="../backend/profile.php">
         New nickname: <input type="text" id="nickname" name="nickname"><br>
-        New password: <input type="password" id="password" name="password" required><br>
-        New e-mail: <input type="text" id="email" name="email" required><br>
+        New password: <input type="password" id="password" name="password"><br>
+        New e-mail: <input type="text" id="email" name="email"><br>
+        New birth date: <input type="text" id="birthdate" name="birthdate"><br>
         <button type="submit">Update Profile</button>
-        <form id="logoutForm" method="POST" action="../backend/logout.php">
-            <button type="submit">Logout</button>
-        </form>
+    </form>
+    <form id="logoutForm" method="POST" action="../backend/logout.php">
+        <button type="submit">Logout</button>
     </form>
     <p id="message"></p>
-    <script src="profile.js"></script>
+    <script src="./js/profile.js"></script>
+     <script src="./js/logout.js"></script>
 </body>
 </html>

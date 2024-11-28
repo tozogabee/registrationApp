@@ -1,0 +1,19 @@
+{
+    "name": "your-namespace/your-project",
+    "description": "A PHP project for managing a user registration and login system.",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^5.5", 
+        "monolog/monolog": "^2.8"   
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php artisan migrate"
+        ]
+    }
+}

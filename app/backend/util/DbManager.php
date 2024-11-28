@@ -24,7 +24,7 @@ class DbManager {
         $this->logManager = LogManager::getInstance();
         // Check for connection errors
         if ($this->mysqli->connect_error) {
-            $logManager->logMessage('ERROR','Connection failed: ' . $this->mysqli->connect_error);
+            $this->logManager->logMessage('ERROR','Connection failed: ' . $this->mysqli->connect_error);
             die("Connection failed: " . $this->mysqli->connect_error);
         }
     }
@@ -157,7 +157,7 @@ class DbManager {
         // Fetch the result
         $result = $stmt->get_result();
         if ($result->num_rows === 0) {
-            $this->logManager->logMessage("User not found by {$id}.");
+            $this->logManager->logMessage("User not found by {$result['id']}.");
             return null; // No user found
         }
 
@@ -243,10 +243,11 @@ class DbManager {
         $logged_in_user = $this->userLoggedIn($user_id);
         // Check if the user is already logged in
         if ($logged_in_user) {
-            $this->logManager->logMessage('ERROR', "User with ID $user_id is already logged in.");
+            //$this->logManager->logMessage('ERROR', "User with ID $user_id is already logged in.");
             return [
                 'success' => false,
-                'message' => 'User is already logged in'
+                'message' => 'User is already logged in',
+                'userDto' => $logged_in_user
             ];
         }
         
@@ -337,7 +338,7 @@ class DbManager {
             $this->logManager->logMessage('INFO', "Updated login status to logged out for user ID $user_id.");
             return [
                 'success' => true,
-                'message' => 'Logout successfully'
+                'message' => "{$logged_in_user->email} logged out successfully!" 
             ];
         } else {
             $this->logManager->logMessage('ERROR', "Failed to update login status for user ID $user_id: " . $stmt->error);
@@ -349,8 +350,8 @@ class DbManager {
 
     }
 
-    private function userLoggedIn($user_id) {
-        $stmt = $this->mysqli->prepare("SELECT is_logged FROM users WHERE id = ?");
+    public function userLoggedIn($user_id) {
+        $stmt = $this->mysqli->prepare("SELECT is_logged,email,nickname,birth_date FROM users WHERE id = ?");
         if (!$stmt) {
             $this->logManager->logMessage('ERROR', "Failed to prepare statement in isUserLoggedIn: " . $this->mysqli->error);
             return false; // Assume not logged in if query fails
@@ -366,19 +367,77 @@ class DbManager {
             if ($row['is_logged'] == 1){
                 return new UserDto(
                     $user_id,                    // ID
-                    null,                        // Email (fetch separately if needed)
-                    null,                        // Nickname (fetch separately if needed)
-                    null,                        // Birth Date (fetch separately if needed)
+                    $row['email'],                        // Email (fetch separately if needed)
+                    $row['nickname'],
+                    $row['birth_date'],
+                    //$row['birthDate'],                        // Birth Date (fetch separately if needed)
                     null,
-                    null,
-                    null,
-                    null                        
+                    null
                 );
             }
         }
         return null; // No record found
     }
-    
-        
+
+    public function modifyUser($id, $data) {
+        // Filter fields for dynamic updates
+        $allowedFields = ['nickname', 'email', 'birthdate'];
+        $setClauses = [];
+        $params = [];
+        $types = '';
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $allowedFields)) {
+                $setClauses[] = "$key = ?";
+                $params[] = $value;
+                $types .= is_int($value) ? 'i' : 's'; // Detect type (integer or string)
+            }
+        }
+
+        // If no valid fields are provided, return an error
+        if (empty($setClauses)) {
+            return [
+                'success' => false,
+                'message' => 'No valid fields provided for update.'
+            ];
+        }
+
+        // Add the ID parameter for the WHERE clause
+        $params[] = $id;
+        $types .= 'i'; // `id` is an integer
+
+        // Build the query dynamically
+        $query = "UPDATE users SET " . implode(', ', $setClauses) . " WHERE id = ?";
+
+        // Prepare the statement
+        $stmt = $this->mysqli->prepare($query);
+        if (!$stmt) {
+            $this->logManager->logMessage('ERROR', "Failed to prepare statement in modifyUser: " . $this->mysqli->error);
+            return [
+                'success' => false,
+                'message' => 'Database error: ' . $this->mysqli->error
+            ];
+        }
+
+        // Bind parameters
+        $stmt->bind_param($types, ...$params);
+
+        // Execute the statement
+        if ($stmt->execute()) {
+            return [
+                'success' => true,
+                'message' => 'User updated successfully.'
+            ];
+        } else {
+            $this->logManager->logMessage('ERROR', "Failed to execute statement in modifyUser: " . $stmt->error);
+            return [
+                'success' => false,
+                'message' => 'Failed to update user: ' . $stmt->error
+            ];
+        }
+    }
+
+
+
 }
 ?>

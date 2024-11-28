@@ -1,31 +1,53 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Get the user ID from localStorage (or sessionStorage)
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-        alert('User not logged in. Redirecting to login page.');
-        window.location.href = '../login.html'; // Redirect to login page
-        return;
+fetch('../backend/profile', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json'
     }
-
-    // Fetch user details from the server
-    fetch(`http://localhost:8080/backend/getProfile/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
+})
+    .then(response => {
+        console.log('Response:', response); // Log the full response object
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        return response.json();
     })
-    .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Populate the form fields with user data
-            document.getElementById('nickname').value = data.user.nickname || '';
-            document.getElementById('email').value = data.user.email || '';
+            document.getElementById('nickname').value = data.nickname;
+            document.getElementById('email').value = data.email;
+            document.getElementById('birthdate').value = data.birth_date;
+            localStorage.setItem('user_id',data.id);
+            sessionStorage.setItem('user_id',data.id);
         } else {
             alert('Failed to fetch user data: ' + data.message);
         }
     })
     .catch(error => {
-        console.error('Error fetching user data:', error);
-    });
-});
+        console.error('Error:', error); // Log the error for debugging
+    })
+    fetch('../backend/profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            console.log('Response:', response); // Log the full response object
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const messageElement = document.getElementById('message');
+            if(data.success) {
+                messageElement.className = 'success';
+                messageElement.textContent = 'Updated user successfully';
+                setTimeout(() => {
+                    window.location.href = '/client/index.html';
+                }, 2000);
+            } else {
+                messageElement.className = 'error';
+                messageElement.textContent = data.message || 'update failed!';
+            }
+        })

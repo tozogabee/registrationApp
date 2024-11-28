@@ -23,6 +23,8 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     
         const messageElement = document.getElementById('message');
         if (result.success) {
+            localStorage.setItem('userId', result.userId);
+            sessionStorage.setItem('user_id',result.userId);
             messageElement.className = 'success';
             messageElement.textContent = `Welcome, ${result.nickname}! Your birth date is ${result.birth_date}.`;
             setTimeout(() => {
@@ -30,6 +32,8 @@ document.getElementById('loginForm').addEventListener('submit', async function (
             }, 2000);
         } else if (result.message === 'User is already logged in') {
             // User already logged in
+            localStorage.setItem('userId', result.userId);
+            sessionStorage.setItem('user_id',result.userId);
             messageElement.className = 'info';
             messageElement.textContent = 'You are already logged in. Redirecting to your profile...';
             setTimeout(() => {
