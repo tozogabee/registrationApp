@@ -23,18 +23,25 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     
         const messageElement = document.getElementById('message');
         if (result.success) {
-            //messageElement.style.color = 'green';
             messageElement.className = 'success';
             messageElement.textContent = `Welcome, ${result.nickname}! Your birth date is ${result.birth_date}.`;
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 2000);
+        } else if (result.message === 'User is already logged in') {
+            // User already logged in
+            messageElement.className = 'info';
+            messageElement.textContent = 'You are already logged in. Redirecting to your profile...';
+            setTimeout(() => {
+                window.location.href = 'profile.html';
+            }, 3000);
         } else {
-            //messageElement.style.color = 'red';
             messageElement.className = 'error';
             messageElement.textContent = result.message || 'Login failed.';
         }
     } catch (error) {
         console.error('Error:', error);
         const messageElement = document.getElementById('message');
-        //messageElement.style.color = 'red';
         messageElement.className = 'error';
         messageElement.textContent = 'An error occurred. Please try again later.';
     }

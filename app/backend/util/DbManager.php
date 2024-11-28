@@ -21,7 +21,6 @@ class DbManager {
             $config['password'],
             $config['database']
         );
-        //$this->mysqli = new mysqli($this->host, $this->username, $this->password, $this->database);
         $this->logManager = LogManager::getInstance();
         // Check for connection errors
         if ($this->mysqli->connect_error) {
@@ -47,11 +46,11 @@ class DbManager {
 
      // Fetch user data by email
      public function fetchUserByEmail($email) {
-        if (rand(0, 1) === 0) {
+        //if (rand(0, 1) === 0) {
             return $this->fetchFromDatabaseByEmail($email);
-        } else {
-            return $this->fetchFromFileByEmail($email);
-        }
+        //} else {
+            //return $this->fetchFromFileByEmail($email);
+        //}
     }
 
     // Check if a nickname is already taken
@@ -116,7 +115,7 @@ class DbManager {
 
     // Private method to fetch user data from a file
     private function fetchFromFileByEmail($email) {
-        $file = fopen('./backend/databasefile/users.txt', "r");
+        $file = fopen('./databasefile/users.txt', "r");
         if ($file) {
             while (($line = fgets($file)) !== false) {
                 $data = explode(",", trim($line));
@@ -124,11 +123,11 @@ class DbManager {
                     fclose($file);
                     $this->logManager->logMessage('INFO',"From File : " . json_encode($data));
                     return new UserDto(
-                        $data[0] ?? null, // id
-                        $data[1] ?? null, // email
-                        $data[2] ?? null, // nickname
-                        $data[3] ?? null, // birth_date
-                        $data[4] ?? null  // password_hash
+                        $data[0] ?? null,
+                        $data[1] ?? null, 
+                        $data[2] ?? null, 
+                        $data[3] ?? null, 
+                        $data[4] ?? null                    
                     );
                 }
             }
@@ -136,9 +135,56 @@ class DbManager {
         }
         return null;
     }
+
+    public function fetchUserById($userId)
+{
+    try {
+        // Prepare the SQL query
+        $query = "SELECT id, email, nickname, password_hash, birth_date FROM users WHERE id = ? LIMIT 1";
+        
+        // Prepare the statement
+        $stmt = $this->mysqli->prepare($query);
+        if (!$stmt) {
+            throw new Exception('Failed to prepare statement: ' . $this->mysqli->error);
+        }
+
+        // Bind the user ID parameter
+        $stmt->bind_param('i', $userId);
+
+        // Execute the query
+        $stmt->execute();
+
+        // Fetch the result
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $this->logManager->logMessage("User not found by {$id}.");
+            return null; // No user found
+        }
+
+        // Fetch the user data as an associative array
+        $user = $result->fetch_assoc();
+
+        // Close the statement
+        $stmt->close();
+
+        // Map the result to a UserDto object (if you use DTOs)
+        return new UserDto(
+            $user['id'],
+            $user['email'],
+            $user['nickname'],
+            $user['password_hash'],
+            $user['birth_date']
+        );
+    } catch (Exception $e) {
+        // Log the error and return null
+        LogManager::getInstance()->logMessage('ERROR', 'Failed to fetch user by ID: ' . $e->getMessage());
+        return null;
+    }
+}
+
     
     public function recreateUsersFile() {
-        $filePath = './backend/databasefile/users.txt';
+        $filePath = './databasefile/users.txt';
     
         $directoryPath = dirname($filePath); // Extract the directory path
 
@@ -194,8 +240,9 @@ class DbManager {
     
         $user_id = $exist_user->id;
     
+        $logged_in_user = $this->userLoggedIn($user_id);
         // Check if the user is already logged in
-        if ($this->isUserLoggedIn($user_id)) {
+        if ($logged_in_user) {
             $this->logManager->logMessage('ERROR', "User with ID $user_id is already logged in.");
             return [
                 'success' => false,
@@ -206,8 +253,10 @@ class DbManager {
     
         // Prepare the statement for updating login status
         $stmt = $this->mysqli->prepare(
-            "INSERT INTO logins (user_id, is_logged) VALUES (?, ?) 
-             ON DUPLICATE KEY UPDATE is_logged = VALUES(is_logged), logged_in_at = CURRENT_TIMESTAMP"
+           "UPDATE users
+           SET is_logged = 1, 
+               logged_in_at = CURRENT_TIMESTAMP
+           WHERE id = ?;"
         );
     
         if (!$stmt) {
@@ -218,8 +267,7 @@ class DbManager {
             ];
         }
     
-        $is_logged = 1; // Use integer for logged-in status
-        $stmt->bind_param("ii", $user_id, $is_logged);
+        $stmt->bind_param("i", $user_id);
     
         // Execute the statement
         if ($stmt->execute()) {
@@ -242,24 +290,67 @@ class DbManager {
     
     
 
-    public function logout($email){
-        $this->mysqli->begin_transaction();
-        $exist_user = $this->fetchUserByEmail($email);
+    public function logout($id){
+        $exist_user = $this->fetchUserById($id);
 
-        $this->logManager->logMessage('INFO', "Attempting to log out user with email $email.");
-    
-        if (!$exist_user) {
-            $this->logManager->logMessage('ERROR', "User with email $email does not exist.");
-            $this->mysqli->rollback();
+        //$logged_in_user = $this->userLoggedIn($email);
+        if(!$exist_user){
+            $this->logManager->logMessage('ERROR', "User with email $exist_user->email does not exist.");
             return [
                 'success' => false,
                 'message' => 'User does not exist'
             ];
         }
+
+        $this->logManager->logMessage('INFO', "Attempting to log out user with email $exist_user->email.");
+        $logged_in_user = $this->userLoggedIn($exist_user->id);
+        //$this->logManager->logMessage('ERROR',"logged user - {$logged_in_user}");
+        if (!$logged_in_user) {
+            $this->logManager->logMessage('ERROR', "User with email $exist_user->email does not login.");
+            return [
+                'success' => false,
+                'message' => 'User is already logged out.'
+            ];
+        }
+
+        $stmt = $this->mysqli->prepare(
+            "UPDATE users
+            SET is_logged = 0            
+            WHERE id = ?;"
+         );
+
+        // Check if the statement preparation was successful
+        if (!$stmt) {
+            $this->logManager->logMessage('ERROR', "Failed to prepare statement in updateLoginStatus: " . $this->mysqli->error);
+            return [
+                'success' => false,
+                'message' => 'Database error: ' . $this->mysqli->error
+            ];
+        }
+
+        // Bind parameters
+        $user_id = $logged_in_user->id;
+        $stmt->bind_param("i", $user_id);
+        
+        // Execute the statement
+        if ($stmt->execute()) {
+            $this->logManager->logMessage('INFO', "Updated login status to logged out for user ID $user_id.");
+            return [
+                'success' => true,
+                'message' => 'Logout successfully'
+            ];
+        } else {
+            $this->logManager->logMessage('ERROR', "Failed to update login status for user ID $user_id: " . $stmt->error);
+            return [
+                'success' => false,
+                'message' => 'Failed to update login status: ' . $stmt->error
+            ];
+        }
+
     }
 
-    private function isUserLoggedIn($user_id) {
-        $stmt = $this->mysqli->prepare("SELECT is_logged FROM logins WHERE user_id = ?");
+    private function userLoggedIn($user_id) {
+        $stmt = $this->mysqli->prepare("SELECT is_logged FROM users WHERE id = ?");
         if (!$stmt) {
             $this->logManager->logMessage('ERROR', "Failed to prepare statement in isUserLoggedIn: " . $this->mysqli->error);
             return false; // Assume not logged in if query fails
@@ -272,10 +363,20 @@ class DbManager {
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $this->logManager->logMessage('DEBUG', "Login status for user ID $user_id: " . json_encode($row));
-            return $row['is_logged'] == 1;
+            if ($row['is_logged'] == 1){
+                return new UserDto(
+                    $user_id,                    // ID
+                    null,                        // Email (fetch separately if needed)
+                    null,                        // Nickname (fetch separately if needed)
+                    null,                        // Birth Date (fetch separately if needed)
+                    null,
+                    null,
+                    null,
+                    null                        
+                );
+            }
         }
-    
-        return false; // No record found
+        return null; // No record found
     }
     
         

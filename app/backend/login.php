@@ -2,6 +2,8 @@
 // Include necessary files
 include_once 'util/DbManager.php';
 include_once 'util/LogManager.php';
+session_start();
+
 
 // Set the response content type to JSON
 header('Content-Type: application/json');
@@ -70,6 +72,8 @@ try {
             'nickname' => $loggedUser->nickname,
             'birth_date' => $loggedUser->birthDate
         ];
+        $_SESSION['email'] = $loggedUser->email;
+        $_SESSION['user_id'] = $loggedUser->id; 
         $logManager->logMessage('INFO', "{$loggedUser->nickname} logged in successfully.");
         echo json_encode($response);
     } else {

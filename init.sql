@@ -4,12 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     nickname VARCHAR(50),
     birth_date DATE,
     password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS logins (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY, 
-    user_id BIGINT UNIQUE NOT NULL,              
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_logged TINYINT(1) DEFAULT 0,
-    logged_in_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP              
+    logged_in_at TIMESTAMP NULL              
+
 );

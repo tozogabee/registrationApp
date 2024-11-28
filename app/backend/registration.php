@@ -51,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Check if the nickname already exists
-    //if (is_nickname_taken($mysqli, $nickname)) {
     $user_data = $dbManager->isNicknameTaken($nickname);
     if($user_data) {
         echo json_encode(['success' => false, 'message' => 'This nickname is already taken.']);
