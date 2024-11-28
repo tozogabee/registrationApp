@@ -45,5 +45,4 @@ if (preg_match('/\/logout\/(\d+)$/', $_SERVER['REQUEST_URI'], $matches)) {
 
 // Destroy session and exit
 session_destroy();
-exit;
 ?>

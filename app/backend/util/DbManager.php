@@ -381,16 +381,21 @@ class DbManager {
 
     public function modifyUser($id, $data) {
         // Filter fields for dynamic updates
-        $allowedFields = ['nickname', 'email', 'birthdate'];
+        $allowedFields = ['password_hash','nickname', 'email', 'birth_date'];
         $setClauses = [];
         $params = [];
         $types = '';
 
+        //$this->logManager->logMessage('INFO',"data - " . $data['nickname']);
+
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedFields)) {
-                $setClauses[] = "$key = ?";
-                $params[] = $value;
-                $types .= is_int($value) ? 'i' : 's'; // Detect type (integer or string)
+                if($value !== null) {
+                    $setClauses[] = "$key = ?";
+                    $params[] = $value;
+                    $types .= is_int($value) ? 'i' : 's';
+                    $this->logManager->logMessage('INFO',"data - " . $value);
+                }// Detect type (integer or string)
             }
         }
 
@@ -406,9 +411,11 @@ class DbManager {
         $params[] = $id;
         $types .= 'i'; // `id` is an integer
 
+        $setClauses[] = "is_logged = 0";
         // Build the query dynamically
         $query = "UPDATE users SET " . implode(', ', $setClauses) . " WHERE id = ?";
 
+        $this->logManager->logMessage('INFO','query - ' . $query);
         // Prepare the statement
         $stmt = $this->mysqli->prepare($query);
         if (!$stmt) {
