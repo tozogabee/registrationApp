@@ -87,12 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'password_hash' => $hashed_password === '' ? null : $hashed_password
     ];
 
-    $logManager->logMessage('INFO', 'Nickname: ' . $updateData['password_hash']);
     // Call modifyUser
-    $result = $dbManager->modifyUser($user_id, $updateData);
+    $response = $dbManager->modifyUser($user_id, $updateData);
 
+    $logManager-> logMessage('INFO',"response - " . json_encode($response));
     // Return the result
-    echo json_encode($result);
+    echo json_encode($response);
     session_destroy();
 }
 

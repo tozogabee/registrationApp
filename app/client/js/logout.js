@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        //console.log(data);
         // Check if the user ID is available in localStorage or from another source
         const userId = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id'); // Assuming you store `userId` in localStorage
 

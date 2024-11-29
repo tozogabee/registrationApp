@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id'])) {
     http_response_code(401); // Unauthorized
     exit;
 }
+$logManager->logMessage('INFO',"Session loaded.");
 // Allow only POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $response = ['success' => false, 'message' => 'Invalid request method.'];

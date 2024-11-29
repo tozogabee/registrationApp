@@ -57,7 +57,6 @@ try {
 
     // Attempt to log the user in
     $loggedUser = $dbManager->loginUser($email);
-    //$logManager->logMessage('INFO', "{$loggedUser} is investigating to logged or not.");
 
     if (is_array($loggedUser) && !$loggedUser['success']) {
 

@@ -46,11 +46,11 @@ class DbManager {
 
      // Fetch user data by email
      public function fetchUserByEmail($email) {
-        //if (rand(0, 1) === 0) {
+        if (rand(0, 1) === 0) {
             return $this->fetchFromDatabaseByEmail($email);
-        //} else {
-            //return $this->fetchFromFileByEmail($email);
-        //}
+        } else {
+            return $this->fetchFromFileByEmail($email);
+        }
     }
 
     // Check if a nickname is already taken
@@ -305,7 +305,6 @@ class DbManager {
 
         $this->logManager->logMessage('INFO', "Attempting to log out user with email $exist_user->email.");
         $logged_in_user = $this->userLoggedIn($exist_user->id);
-        //$this->logManager->logMessage('ERROR',"logged user - {$logged_in_user}");
         if (!$logged_in_user) {
             $this->logManager->logMessage('ERROR', "User with email $exist_user->email does not login.");
             return [
@@ -366,11 +365,10 @@ class DbManager {
             $this->logManager->logMessage('DEBUG', "Login status for user ID $user_id: " . json_encode($row));
             if ($row['is_logged'] == 1){
                 return new UserDto(
-                    $user_id,                    // ID
-                    $row['email'],                        // Email (fetch separately if needed)
+                    $user_id,
+                    $row['email'],
                     $row['nickname'],
                     $row['birth_date'],
-                    //$row['birthDate'],                        // Birth Date (fetch separately if needed)
                     null,
                     null
                 );
@@ -386,8 +384,6 @@ class DbManager {
         $params = [];
         $types = '';
 
-        //$this->logManager->logMessage('INFO',"data - " . $data['nickname']);
-
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedFields)) {
                 if($value !== null) {
@@ -395,7 +391,7 @@ class DbManager {
                     $params[] = $value;
                     $types .= is_int($value) ? 'i' : 's';
                     $this->logManager->logMessage('INFO',"data - " . $value);
-                }// Detect type (integer or string)
+                }
             }
         }
 
@@ -431,6 +427,7 @@ class DbManager {
 
         // Execute the statement
         if ($stmt->execute()) {
+            $this->recreateUsersFile();
             return [
                 'success' => true,
                 'message' => 'User updated successfully.'
@@ -443,8 +440,5 @@ class DbManager {
             ];
         }
     }
-
-
-
 }
 ?>
