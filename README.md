@@ -13,8 +13,7 @@ A comprehensive application designed to handle user registration, profile manage
 4. [Users Table Documentation](#users-table-documentation)
 5. [Installation](#installation)
     - [Step 1: Clone the Repository](#step-1-clone-the-repository)
-    - [Step 2: Setup Environment Variables](#step-2-setup-environment-variables)
-    - [Step 3: Run Docker](#step-3-run-docker)
+    - [Step 2: Run Docker](#step-3-run-docker)
 6. [Usage](#usage)
 7. [API Documentation](#api-documentation)
     - [Endpoints Overview](#endpoints-overview)
@@ -143,7 +142,7 @@ cd registrationApp
 Build and start the application using Docker from the registraionApp folder:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Once the application starts, it will be available at `http://localhost:8080/client` or `http://localhost:8080/client/`.
