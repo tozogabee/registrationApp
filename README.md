@@ -138,8 +138,8 @@ POST /backend/login
 Content-Type: application/json
 
 {
-    "email": "example@example.com",
-    "password": "securepassword123"
+    "email": "tozogabee@gmail.com",
+    "password": "1234"
 }
 ```
 
@@ -148,8 +148,8 @@ Content-Type: application/json
 {
    "success": true,
    "id": 6,
-   "email": "tozics@gmail.com",
-   "nickname": "tozics",
+   "email": "tozogabee@gmail.com",
+   "nickname": "tozogabee",
    "birth_date": "1998-01-01"
 }
 ```
