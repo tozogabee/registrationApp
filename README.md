@@ -60,6 +60,72 @@ To get started with `RegistrationApp`, ensure that you have the following softwa
 
 ---
 
+### Users Table Documentation
+
+This document provides a detailed description of the `users` table, which is a core part of the application database schema.
+
+---
+
+#### Table: `users`
+
+The `users` table stores user information, including their credentials, profile details, and login status.
+
+#### **Columns**
+
+| **Column Name**     | **Data Type**       | **Description**                                                                 |
+|---------------------|---------------------|---------------------------------------------------------------------------------|
+| `id`                | `bigint`           | Primary key. A unique identifier for each user.                                |
+| `email`             | `varchar(255)`     | The user's email address. Must be unique.                                      |
+| `nickname`          | `varchar(50)`      | The user's chosen nickname. Must be unique.                                    |
+| `birth_date`        | `date`             | The user's date of birth.                                                      |
+| `password_hash`     | `varchar(255)`     | The hashed password for secure authentication.                                 |
+| `created_at`        | `timestamp`        | The timestamp when the user was created.                                       |
+| `is_logged`         | `tinyint(1)`       | Indicates whether the user is currently logged in: `0` (not logged in), `1` (logged in). |
+| `logged_in_at`      | `timestamp`        | The timestamp of the user's most recent login.                                 |
+
+---
+
+#### **Important Notes**
+
+1. **Unique Constraints**:
+   - The `email` column must be unique for all users.
+   - The `nickname` column must also be unique.
+
+2. **Password Security**:
+   - The `password_hash` column stores a securely hashed version of the user's password. It should never store plain-text passwords.
+
+3. **Login Status**:
+   - The `is_logged` column is a boolean-like field:
+      - `0`: The user is not logged in.
+      - `1`: The user is currently logged in.
+   - The `logged_in_at` column records the last successful login timestamp for audit and tracking purposes.
+
+4. **Timestamps**:
+   - The `created_at` column automatically tracks the creation date of the user account.
+
+---
+
+#### **Usage Scenarios**
+
+##### **Registration**
+- When a user registers:
+   - A new row is inserted into the `users` table with their `email`, `nickname`, `password_hash`, and other details.
+   - The `is_logged` field is set to `0` by default.
+
+##### **Login**
+- Upon successful login:
+   - The `is_logged` field is updated to `1`.
+   - The `logged_in_at` field is updated to the current timestamp.
+
+##### **Logout**
+- When the user logs out:
+   - The `is_logged` field is reset to `0`.
+
+---
+
+This schema is essential for managing user authentication and profile details effectively in the system.
+
+
 ## Installation
 
 Follow these steps to set up the application:
