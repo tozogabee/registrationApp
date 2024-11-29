@@ -214,36 +214,80 @@ GET /backend/profile
 
 
 ---
-## System under test
+# System Under Test
 
-Go to the localhost:8080/client or localhost:8080/client/
-You can see the main page with Login or Registration button.
+This document provides a guide for testing the client system.
 
-#### Registration
-##### Positive test
-
-Click to the Registration
-You will see the localhost:8080/client/registration
-Fill the datas correctly, click to the Registration.
-Check the database table with registered user and not logged in with is_logged is 0.
-
-##### Negative test
-Try to register user with same email and then same nick name.
-You will see the email/nickname already used.
 ---
 
-#### Update user
-##### Positive test
-Login with user
-Click to the Login.
-Fill the field correctly.
-You will redirect to the profile site.
-Check the is_logged value to the user, You will see this is 1.
-Fill the datas that want to update, click to Update the profile.
+## Main Page
 
-##### Negative test
-Try the update with same email/nickname that belongs to the other existing user
-You must get email/nick name already used.
+Navigate to the main page by visiting the following URL:
+
+- **URL**: `http://localhost:8080/client` or `http://localhost:8080/client/`
+
+On the main page, you will see buttons for **Login** and **Registration**.
+
 ---
+
+## Registration
+
+### **Positive Test**
+
+1. Click on the **Registration** button.
+2. You will be redirected to `http://localhost:8080/client/registration`.
+3. Fill in the form fields correctly (e.g., email, password, username).
+4. Click on the **Registration** button.
+5. Verify:
+   - The user is successfully added to the database.
+   - The `is_logged` field for the user in the database is `0` (user is not logged in).
+
+### **Negative Test**
+
+1. Try registering a user with an already existing email.
+   - **Expected Result**: You should see an error message indicating that the "Email is already used."
+2. Try registering a user with an already existing nickname.
+   - **Expected Result**: You should see an error message indicating that the "Nickname is already used."
+
+---
+
+## Update User Profile
+
+### **Positive Test**
+
+1. Login with a user:
+   - Click on the **Login** button.
+   - Fill in the fields correctly and submit.
+   - You will be redirected to the **Profile page**.
+2. Verify:
+   - The `is_logged` field for the user in the database is updated to `1` (user is logged in).
+3. On the profile page, fill in the fields you want to update.
+4. Click on the **Update Profile** button.
+5. Verify:
+   - The user data is successfully updated in the database.
+   - is_logged set to 0 again, user logged out.
+
+### **Negative Test**
+
+1. Attempt to update the profile using an email or nickname that already belongs to another existing user.
+   - **Expected Result**: You should see an error message indicating that the email is already used or nickname is already used.
+
+---
+
+## Summary of Test URLs
+
+| **Functionality** | **URL**                                         | **Action**                                                  |
+|-------------------|-------------------------------------------------|-------------------------------------------------------------|
+| Main Page         | `http://localhost:8080/client`                  | Displays the main page with Login and Registration options. |
+| Login page        | `http://localhost:8080/client/login`            | Displays the main page with Login and Registration options. |
+| Logout page       | `http://localhost:8080/client/logout/{user_id}` | Logged user logout.                                         |
+| Registration Form | `http://localhost:8080/client/registration`     | Allows users to register.                                   |
+| Profile Page      | After login                                     | Redirects to the profile page for logged-in users.          |
+
+---
+
+Follow this guide to systematically test the system and ensure that it meets all functional requirements.
+
+
 
 Feel free to reach out if you have any questions or suggestions! 🎉
