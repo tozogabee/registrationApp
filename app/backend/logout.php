@@ -9,11 +9,10 @@ $logManager = LogManager::getInstance();
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in.']);
-    http_response_code(401); // Unauthorized
+    http_response_code(401);
     exit;
 }
 $logManager->logMessage('INFO',"Session loaded.");
-// Allow only POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $response = ['success' => false, 'message' => 'Invalid request method.'];
     $logManager->logMessage('ERROR', $response['message']);
@@ -21,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Extract the user ID from the URL
 if (preg_match('/\/logout\/(\d+)$/', $_SERVER['REQUEST_URI'], $matches)) {
     $userId = $matches[1];
 
@@ -44,6 +42,5 @@ if (preg_match('/\/logout\/(\d+)$/', $_SERVER['REQUEST_URI'], $matches)) {
     echo json_encode($response);
 }
 
-// Destroy session and exit
 session_destroy();
 ?>

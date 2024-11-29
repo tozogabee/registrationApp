@@ -1,41 +1,37 @@
 <?php
 session_start();
-header('Content-Type: application/json'); // Respond with JSON
+header('Content-Type: application/json');
 
-// Include your database connection
 include_once 'util/DbManager.php';
 include_once 'util/LogManager.php';
 
 $session_timeout = 300;
 
 if (isset($_SESSION['LAST_ACTIVITY'])) {
-    // Calculate the session's lifetime
     $session_lifetime = time() - $_SESSION['LAST_ACTIVITY'];
 
     if ($session_lifetime > $session_timeout) {
-        // If the session has expired, destroy it and start a new one
         session_unset();
         session_destroy();
         session_start();
     }
 }
 
-// Update the last activity time
 $_SESSION['LAST_ACTIVITY'] = time();
 
-// Ensure the user is logged in
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'User not logged in.']);
-    http_response_code(401); // Unauthorized
+    http_response_code(401);
     exit;
 }
 
 $dbManager = DbManager::getInstance();
 $logManager = LogManager::getInstance();
 $user_id = $_SESSION['user_id'];
-// Handle GET request to fetch user details
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
+        $logManager->logMessage('DEBUG',"profile - Before check logged in.");
+
         $logged_in_user = $dbManager->userLoggedIn($user_id);
         if (!$logged_in_user) {
             $response = ['success' => false, 'message' => 'User not found.'];
@@ -43,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             echo json_encode($response);
             exit;
         }
+        $logManager->logMessage('DEBUG',"{$logged_in_user->id}");
+
 
         $response = [
             'success' => true,
@@ -51,18 +49,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'nickname' => $logged_in_user->nickname,
             'birth_date' => $logged_in_user->birthDate
         ];
+        $logManager->logMessage('DEBUG',"The response in profile GET - " . json_encode($response));
+
         echo json_encode($response);
 
 
 
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
-        http_response_code(500); // Internal Server Error
+        http_response_code(500);
     }
     exit;
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = json_decode(file_get_contents('php://input'), true);
+    $logManager->logMessage('DEBUG',"The data in profile POST - " . $data['email']);
 
 
     if ($user_id <= 0) {
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $nickname = isset($data['nickname']) ? trim($data['nickname']) : null;
     $email = isset($data['email']) ? trim($data['email']) : null;
     $birthDate = isset($data['birth_date']) ? trim($data['birth_date']) : null;
-    $password = isset($data['password_hash']) ? trim($data['password_hash']) : null;
+    $password = isset($data['password']) ? trim($data['password']) : null;
     if($password) {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
     }
@@ -87,11 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'password_hash' => $hashed_password === '' ? null : $hashed_password
     ];
 
-    // Call modifyUser
     $response = $dbManager->modifyUser($user_id, $updateData);
 
-    $logManager-> logMessage('INFO',"response - " . json_encode($response));
-    // Return the result
+    $logManager-> logMessage('INFO',"response after modification - " . json_encode($response));
     echo json_encode($response);
     session_destroy();
 }

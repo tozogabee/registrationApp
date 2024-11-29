@@ -1,4 +1,3 @@
-/* General Body Styling */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -8,7 +7,6 @@ body {
     color: #333;
 }
 
-/* Centered Container */
 .container {
     max-width: 800px;
     margin: 50px auto;
@@ -18,7 +16,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Header Styling */
 h1 {
     text-align: center;
     color: #007BFF;
@@ -28,7 +25,6 @@ p {
     text-align: center;
 }
 
-/* Form Styling */
 form {
     max-width: 400px;
     margin: 0 auto;
@@ -43,14 +39,12 @@ form input, form button {
     border-radius: 5px;
 }
 
-/* Form Input Styling */
 form input:focus {
     outline: none;
     border-color: #007BFF;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-/* Button Styling */
 form button {
     background-color: #007BFF;
     color: #fff;
@@ -63,24 +57,20 @@ form button:hover {
     background-color: #0056b3;
 }
 
-/* Message Styling */
 #message {
     margin-bottom: 20px;
     font-size: 16px;
     font-weight: bold;
 }
 
-/* Success Message */
 #message.success {
     color: green;
 }
 
-/* Error Message */
 #message.error {
     color: red;
 }
 
-/* Links */
 a {
     color: #007BFF;
     text-decoration: none;

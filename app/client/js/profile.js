@@ -5,7 +5,7 @@ fetch('../backend/profile', {
     }
 })
     .then(response => {
-        console.log('Response:', response); // Log the full response object
+        console.log('Response:', response);
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -23,21 +23,31 @@ fetch('../backend/profile', {
         }
     })
     .catch(error => {
-        console.error('Error:', error); // Log the error for debugging
+        console.error('Error:', error);
     });
 
 document.getElementById('profileForm').addEventListener('submit', async function (event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
-    // Collect form data
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
     const nickname = document.getElementById('nickname').value.trim();
     const birthDate = document.getElementById('birthdate').value.trim();
 
+    if(email !== '') {
+        if (!validateEmail(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+    }
+    if(birthDate !== '') {
+        if (!validateBirthDate(birthDate)) {
+            alert('Please enter a valid birth date in the format YYYY-MM-DD.');
+            return;
+        }
+    }
 
     try {
-        // Send updated profile data to the server
         const response = await fetch('../backend/profile', {
             method: 'POST',
             headers: {
@@ -45,20 +55,50 @@ document.getElementById('profileForm').addEventListener('submit', async function
             },
             body: JSON.stringify({
                 email,
-                password, // Optional: Only include if provided
+                password,
                 nickname,
                 birth_date: birthDate
             })
         });
 
-        // Ensure the response is okay
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         alert('User modified successfully');
-        window.location.href = '/client/login.html'; // Redirect to login page
+        window.location.href = '/client/login.html';
     } catch (error) {
-        console.error('Fetch error:', error); // Log the error for debugging
+        console.error('Fetch error:', error);
         alert('An error occurred while updating the profile.');
     }
 });
+
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validateBirthDate(birthDate) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(birthDate)) {
+        return false;
+    }
+
+    const dateParts = birthDate.split('-');
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10);
+    const day = parseInt(dateParts[2], 10);
+
+    const dateObject = new Date(year, month - 1, day);
+
+    const now = new Date();
+    const hundredYearsAgo = new Date(now.getFullYear() - 100, now.getMonth(), now.getDate());
+    const isInAdultAge = new Date(now.getFullYear() - 18,now.getMonth(),now.getDay());
+    if (dateObject >= isInAdultAge || dateObject < hundredYearsAgo || dateObject > now) {
+        return false;
+    }
+    return (
+        dateObject.getFullYear() === year &&
+        dateObject.getMonth() === month - 1 &&
+        dateObject.getDate() === day
+    );
+}

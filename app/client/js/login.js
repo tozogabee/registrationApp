@@ -1,8 +1,6 @@
-// Handle form submission
 document.getElementById('loginForm').addEventListener('submit', async function (event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
-    // Get form data
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
 
@@ -19,7 +17,7 @@ document.getElementById('loginForm').addEventListener('submit', async function (
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
     
-        const result = await response.json(); // Parse JSON response
+        const result = await response.json();
     
         const messageElement = document.getElementById('message');
         if (result.success) {

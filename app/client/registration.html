@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/style.css">
     <title>Registration</title>
-    <script src="./js/registration.js" defer></script> <!-- Link to JavaScript -->
+    <script src="./js/registration.js" defer></script>
 </head>
 <body>
     <h1>Registration</h1>
     <form id="registerForm" action="../backend/registration.php">
         <p id="message"></p>
-        E-mail: <input type="email" id="email" required><br>
+        E-mail: <input type="email" id="email" required pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(com|hu|co)$"><br>
         Nickname: <input type="text" id="nickname" required><br>
-        Birth date: <input type="date" id="birth_date" required 
+        Birth date: <input type="date" id="birth_date" required
             max="<?php echo date('Y-m-d'); ?>" 
-            min="<?php echo date('Y-m-d', strtotime('-120 years')); ?>"><br>
+            min="<?php echo date('Y-m-d', strtotime('-120 years')); ?>" pattern="\d{4}-\d{2}-\d{2}"><br>
         Password: <input type="password" id="password" required><br>
         <button type="submit">Registration</button>
         <button type="button" onclick="window.location.href='index.html';">Back to Home</button>

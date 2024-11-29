@@ -11,8 +11,9 @@
     <form id="profileForm" method="POST" action="../backend/profile.php">
         New nickname: <input type="text" id="nickname" name="nickname"><br>
         New password: <input type="password" id="password" name="password"><br>
-        New e-mail: <input type="text" id="email" name="email"><br>
-        New birth date: <input type="text" id="birthdate" name="birthdate"><br>
+        New e-mail: <input type="email" id="email" name="email"
+                           pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.(com|hu|co)$"><br>
+        new birth date: <input type="date" id="birthdate"><br>
         <button type="submit">Update Profile</button>
     </form>
     <form id="logoutForm" method="POST" action="../backend/logout.php">

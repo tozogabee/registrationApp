@@ -6,29 +6,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     logoutForm.addEventListener('submit', async function (e) {
-        e.preventDefault(); // Prevent default form submission behavior
+        e.preventDefault();
 
-        // Optional: Confirm logout action
         if (!confirm('Are you sure you want to log out?')) {
             return;
         }
 
-        // Check if the user ID is available in localStorage or from another source
-        const userId = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id'); // Assuming you store `userId` in localStorage
+        const userId = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id');
 
+        localStorage.removeItem('user_id');
+        sessionStorage.removeItem('user_id');
         if (!userId) {
             alert('User session expired or user not logged in. Redirecting to login.');
-            window.location.href = '../login.html'; // Redirect to login page
+            window.location.href = '../login.html';
             return;
         }
 
         try {
-            // Send a POST request to the logout endpoint
-            const response = await fetch(`../backend/logout/${userId}`, { // Template literal for URL
+            const response = await fetch(`../backend/logout/${userId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Specify JSON if the backend expects it
-                    'X-Requested-With': 'XMLHttpRequest' // Optional: Indicate an AJAX request
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
             if (!response.ok) {
@@ -38,12 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (data.success) {
-                // Clear stored user data
-                localStorage.removeItem('user_id');
-                sessionStorage.removeItem('user_id');
-                // Redirect to the homepage on successful logout
                 alert('You have been logged out.');
-                window.location.href = '/client/index.html';
+                window.location.href = 'index.html';
             } else {
                 alert('Logout failed: ' + (data.message || 'Unknown error.'));
             }
